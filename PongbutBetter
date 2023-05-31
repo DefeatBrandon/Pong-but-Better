@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pong Game</title>
+  <style>
+    canvas {
+      background: #000;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="pong" width="800" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById("pong");
+    const context = canvas.getContext("2d");
+
+    // Paddle object
+    const paddle = {
+      width: 10,
+      height: 100,
+      x: 0,
+      y: canvas.height / 2 - 50,
+      dy: 5,
+      color: "#FFF",
+      score: 0
+    };
+
+    // Ball object
+    const ball = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      radius: 10,
+      speed: 4,
+      dx: 4,
+      dy: 4,
+      color: "#FF0000"
+    };
+
+    // Draw paddle
+    function drawPaddle() {
+      context.fillStyle = paddle.color;
+      context.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    }
+
+    // Draw ball
+    function drawBall() {
+      context.beginPath();
+      context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, false);
+      context.fillStyle = ball.color;
+      context.fill();
+      context.closePath();
+    }
+
+    // Move paddle
+    function movePaddle() {
+      paddle.y += paddle.dy;
+
+      // Restrict paddle within canvas boundaries
+      if (paddle.y + paddle.height > canvas.height) {
+        paddle.y = canvas.height - paddle.height;
+      } else if (paddle.y < 0) {
+        paddle.y = 0;
+      }
+    }
+
+    // Move ball
+    function moveBall() {
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      // Bounce off top/bottom walls
+      if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+        ball.dy *= -1;
+      }
+
+      // Ball and paddle collision detection
+      if (
+        ball.y + ball.radius > paddle.y &&
+        ball.y - ball.radius < paddle.y + paddle.height &&
+        ball.x - ball.radius < paddle.x + paddle.width
+      ) {
+        ball.dx *= -1;
+        paddle.score++;
+      }
+
+      // Reset ball position if it goes off the screen
+      if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+        ball.x = canvas.width / 2;
+        ball.y = canvas.height / 2;
+        ball.dx *= -1;
+        paddle.score = 0;
+      }
+    }
+
+    // Update canvas
+    function update() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawPaddle();
+      drawBall();
+      movePaddle();
+      moveBall();
+
+      // Display score
+      context.fillStyle = "#FFF";
+      context.font = "20px Arial";
+      context.fillText("Score: " + paddle.score, 10, 30);
+
+      requestAnimationFrame(update);
+    }
+
+    // Handle keydown event
+    function keyDownHandler(event) {
+      if (event.key === "ArrowUp" || event.key === "Up") {
+        paddle.dy = -Math.abs(paddle.dy);
+      } else if (event.key === "ArrowDown" || event.key === "Down") {
+        paddle.dy = Math.abs(paddle.dy);
+      }
+    }
+
+    // Handle keyup event
+    function keyUpHandler(event) {
+      if (
+        event.key === "ArrowUp" ||
+        event.key === "ArrowDown" ||
+        event.key === "Up" ||
+        event.key === "Down"
+      ) {
+        paddle.dy = 0;
+      }
+    }
+
+    // Event listeners for keyboard input
+    document.addEventListener("keydown", keyDownHandler);
+    document.addEventListener("keyup", keyUpHandler);
+
+    // Start the game
+    update();
+  </script>
+</body>
+</html>
